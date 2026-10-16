@@ -3,12 +3,14 @@ import pandas as pd
 import pickle
 from pathlib import Path
 
+# Page Configuration
 st.set_page_config(
     page_title="Diamond Price Prediction",
     page_icon="💎",
     layout="centered"
 )
 
+# App Title
 st.title("💎 Diamond Price Prediction")
 st.write(
     "Predict diamond prices using Multiple Linear Regression."
@@ -16,7 +18,7 @@ st.write(
 
 st.divider()
 
-# Load trained model
+# Load Trained Model
 @st.cache_resource
 def load_model():
     model_path = Path(__file__).parent / "model.pkl"
@@ -28,10 +30,12 @@ try:
     model = load_model()
 except FileNotFoundError:
     st.error(
-        "Model file not found! Please save your trained model as model.pkl."
+        "model.pkl not found! Please place model.pkl "
+        "in the same folder as app.py."
     )
     st.stop()
 
+# User Inputs
 st.subheader("Enter Diamond Details")
 
 carat = st.number_input(
@@ -66,31 +70,42 @@ z = st.number_input(
     step=0.1
 )
 
+st.divider()
+
+# Prediction Button
 if st.button("💰 Predict Diamond Price", use_container_width=True):
 
-    if x <= 0 or y <= 0 or z <= 0 or carat <= 0:
-        st.error("Please enter valid positive measurements.")
+    # Prepare Input Data
+    new_diamond = pd.DataFrame({
+        "carat": [carat],
+        "x": [x],
+        "y": [y],
+        "z": [z]
+    })
+
+    # Predict Price
+    predicted_price = model.predict(new_diamond)[0]
+
+    # Display Result
+    if predicted_price < 0:
+        st.warning(
+            f"Predicted price is negative: {predicted_price:.2f}. "
+            "Please check the model and input values."
+        )
     else:
-        input_data = pd.DataFrame(
-            [[carat, x, y, z]],
-            columns=["carat", "x", "y", "z"]
+        st.success("Prediction completed successfully!")
+
+        st.metric(
+            label="Predicted Diamond Price",
+            value=f"{predicted_price:,.2f}"
         )
 
-        prediction = model.predict(input_data)[0]
+        st.write("### Your Diamond Details")
+        st.dataframe(new_diamond, hide_index=True)
 
-        if prediction < 0:
-            st.warning(
-                f"Predicted price is negative ({prediction:.2f}). "
-                "Check the model and input values."
-            )
-        else:
-            st.success("Prediction completed!")
-            st.metric(
-                label="Predicted Diamond Price",
-                value=f"{prediction:,.2f}"
-            )
-
+# Footer
 st.divider()
+
 st.caption(
     "Machine Learning Project | Multiple Linear Regression"
 )
