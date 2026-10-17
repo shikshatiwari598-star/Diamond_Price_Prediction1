@@ -62,7 +62,7 @@ if st.button("Predict Diamond Price", type="primary"):
         st.success("Prediction Completed!")
         st.metric(
             label="Predicted Diamond Price",
-            value=f"{prediction:,.2f}"
+            value=f"${prediction:,.2f}"
         )
 
 st.caption("Note: Prediction accuracy depends on the model's training data.")
